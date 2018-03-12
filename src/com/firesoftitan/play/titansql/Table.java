@@ -38,6 +38,39 @@ public class Table {
         typesByName.put(DT.getName(), DT);
 
     }
+    public void search(final CallbackResults callback)
+    {
+        new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + name);
+                    rs = ps.executeQuery();
+                    List<HashMap<String, ResultData>> results = new ArrayList<HashMap<String, ResultData>>();
+                    HashMap<String, ResultData> oneRow = new HashMap<String, ResultData>();
+                    while (rs.next()) {
+                        oneRow.clear();
+                        for (DataType DT: types)
+                        {
+                            Object result = rs.getObject(DT.getName());
+                            ResultData resultData = new ResultData(DT, result);
+                            oneRow.put(DT.getName(), resultData);
+                        }
+                        results.add(oneRow);
+                    }
+                    callback.onResult(results);
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    close(ps, rs);
+                }
+            }
+        }.runTaskAsynchronously(TitanSQL.instance);
+    }
     public void search(final DataType type,final Object what, final CallbackResults callback)
     {
         new BukkitRunnable() {
@@ -49,7 +82,7 @@ public class Table {
                 ResultData conver = new ResultData(type, what);
                 Object whatconverted =  conver.get();
                 try {
-                    ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + name + " WHERE " + type.getName() + " = ? LIMIT 1");
+                    ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + name + " WHERE " + type.getName() + " = ?");
                     type.getType().setPreparedStatement(ps, 1, whatconverted);
                     rs = ps.executeQuery();
                     List<HashMap<String, ResultData>> results = new ArrayList<HashMap<String, ResultData>>();
