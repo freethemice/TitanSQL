@@ -103,7 +103,7 @@ public class Table {
         }
         return null;
     }
-    private void StartRow()
+    private void startRow()
     {
         tempRow = new HashMap<String, Object>();
     }
@@ -121,7 +121,7 @@ public class Table {
         }
         if (tempRow == null)
         {
-            StartRow();
+            startRow();
         }
         tempRow.put(dataname, value);
         return true;
@@ -193,7 +193,7 @@ public class Table {
         queryCreateTable = queryCreateTable + ")";
         return queryCreateTable;
     }
-    public void CreateTable()
+    public void createTable()
     {
         try {
             String queryCreateTable = getCreateTable();
