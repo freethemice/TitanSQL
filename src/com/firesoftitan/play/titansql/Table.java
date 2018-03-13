@@ -47,7 +47,7 @@ public class Table {
                 PreparedStatement ps = null;
                 ResultSet rs = null;
                 try {
-                    ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + name);
+                    ps = TitanSQL.instance.getConnection().prepareCall("SELECT * FROM " + name);
                     rs = ps.executeQuery();
                     List<HashMap<String, ResultData>> results = new ArrayList<HashMap<String, ResultData>>();
                     HashMap<String, ResultData> oneRow = new HashMap<String, ResultData>();
@@ -106,6 +106,23 @@ public class Table {
                 }
             }
         }.runTaskAsynchronously(TitanSQL.instance);
+    }
+    //DELETE FROM `lkr8bkxu_firesoftitan`.`fot_test` WHERE  `id`=12345 AND `name`='Farthead1' AND `something`=b'0' LIMIT 1;
+    public void delete(DataType type, Object what)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ResultData conver = new ResultData(type, what);
+        what =  conver.get();
+        try {
+            ps = TitanSQL.instance.getConnection().prepareStatement("DELETE FROM " + this.name + " WHERE " + type.getName() + " = ? LIMIT 1");
+            type.getType().setPreparedStatement(ps, 1, what);
+            rs = ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            close(ps, rs);
+        }
     }
     public HashMap<String, ResultData> search(DataType type, Object what)
     {
@@ -237,7 +254,7 @@ public class Table {
         }
         catch (Exception e)
         {
-
+            e.printStackTrace();
         }
     }
 }

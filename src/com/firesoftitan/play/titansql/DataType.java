@@ -1,7 +1,5 @@
 package com.firesoftitan.play.titansql;
 
-import java.sql.ResultSet;
-
 public class DataType {
     private DataTypeEnum type;
     private Boolean NOT_NULL;
@@ -17,44 +15,42 @@ public class DataType {
         this.UNIQUE = UNIQUE;
         this.PRIMARY_KEY = PRIMARY_KEY;
     }
-
-    public String getSQLTypes(ResultSet rs)
+    public String getSQLTypes()
     {
         switch (type.getName())
         {
             case "byte":
-                return "TINYINT";
+                return"TINYINT";
             case "short":
-                return "SMALLINT";
+                return"SMALLINT";
             case "integer":
-                return "INT";
+                return"INT";
             case "long":
-                return "BIGINT";
+                return"BIGINT";
             case "float":
-                return "FLOAT";
+                return"FLOAT";
             case "double":
-                return "DOUBLE";
+                return"DOUBLE";
             case "string":
-                return "TEXT";
+                return"TEXT";
             case "boolean":
-                return "BIT";
+                return"BIT";
             case "itemstack":
-                return "TEXT";
+                return"TEXT";
             case "location":
-                return "TEXT";
+                return"TEXT";
             case "uuid":
-                return "TEXT";
+                return"TEXT";
             case "intlist":
-                return "TEXT";
+                return"TEXT";
             case "stringlist":
-                return "TEXT";
+                return"TEXT";
             case "itemlist":
-                return "TEXT";
+                return"TEXT";
 
         }
         return null;
     }
-
     public int getIndex()
     {
         return this.index;
@@ -86,7 +82,8 @@ public class DataType {
     }
     public String getCreateTable()
     {
-        String out = name + " " + type.getSQLTypes();
+        String out = name + " " + getSQLTypes();
+
         if (NOT_NULL)
         {
             out = out + " NOT NULL";

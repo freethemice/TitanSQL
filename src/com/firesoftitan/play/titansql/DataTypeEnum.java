@@ -123,42 +123,6 @@ LONGTEXT("LONGTEXT");*/
                 }
         return null;
     }
-    public String getSQLTypes()
-    {
-        switch (this.name)
-        {
-            case "byte":
-                return "TINYINT";
-            case "short":
-                return "SMALLINT";
-            case "integer":
-                return "INT";
-            case "long":
-                return "BIGINT";
-            case "float":
-                return "FLOAT";
-            case "double":
-                return "DOUBLE";
-            case "string":
-                return "TEXT";
-            case "boolean":
-                return "BIT";
-            case "itemstack":
-                return "TEXT";
-            case "location":
-                return "TEXT";
-            case "uuid":
-                return "TEXT";
-            case "intlist":
-                return "TEXT";
-            case "stringlist":
-                return "TEXT";
-            case "itemlist":
-                return "TEXT";
-
-        }
-        return null;
-    }
     public boolean checkObject(Object value)
     {
         switch (this.name)
