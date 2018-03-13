@@ -165,7 +165,9 @@ public class TitanSQL extends JavaPlugin {
         {
             config.set("i.world", "error");
         }
-        config.set("i.world", location.getWorld().getName());
+        else {
+            config.set("i.world", location.getWorld().getName());
+        }
         return DatatypeConverter.printBase64Binary(config.saveToString().getBytes(StandardCharsets.UTF_8));
     }
     /**
