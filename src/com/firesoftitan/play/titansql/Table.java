@@ -168,21 +168,21 @@ public class Table {
         return -1;
     }
     //DELETE FROM `lkr8bkxu_firesoftitan`.`fot_test` WHERE  `id`=12345 AND `name`='Farthead1' AND `something`=b'0' LIMIT 1;
-    public void delete(DataType type, Object what)
+    public boolean delete(DataType type, Object what)
     {
         PreparedStatement ps = null;
-        ResultSet rs = null;
         ResultData conver = new ResultData(type, what);
         what =  conver.get();
         try {
             ps = TitanSQL.instance.getConnection().prepareStatement("DELETE FROM " + this.name + " WHERE " + type.getName() + " = ? LIMIT 1");
             type.getType().setPreparedStatement(ps, 1, what);
-            rs = ps.executeQuery();
-        } catch (SQLException ex) {
+            return (0 != ps.executeUpdate());
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            close(ps, rs);
+            close(ps);
         }
+        return false;
     }
 
     private void startRow()
