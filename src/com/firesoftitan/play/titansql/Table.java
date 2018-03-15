@@ -141,6 +141,11 @@ public class Table {
         }
         return null;
     }
+    public boolean contains(String name, Object what)
+    {
+        DataType type = getDataType(name);
+        return contains(type, what);
+    }
     public boolean contains(DataType type, Object what)
     {
         HashMap<String, ResultData> tmp = search(type, what);
@@ -173,6 +178,11 @@ public class Table {
         return -1;
     }
     //DELETE FROM `lkr8bkxu_firesoftitan`.`fot_test` WHERE  `id`=12345 AND `name`='Farthead1' AND `something`=b'0' LIMIT 1;
+    public boolean delete(String name, Object what)
+    {
+        DataType type = getDataType(name);
+        return delete(type, what);
+    }
     public boolean delete(DataType type, Object what)
     {
         PreparedStatement ps = null;
