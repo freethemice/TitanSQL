@@ -107,6 +107,11 @@ public class Table {
             }
         }.runTaskAsynchronously(TitanSQL.instance);
     }
+    public HashMap<String, ResultData> search(String name, Object what)
+    {
+        DataType searchfor = getDataType(name);
+        return search(searchfor, what);
+    }
     public HashMap<String, ResultData> search(DataType type, Object what)
     {
         PreparedStatement ps = null;
