@@ -33,6 +33,7 @@ LONGTEXT("LONGTEXT");*/
     FLOAT("float"),
     DOUBLE("double"),
     STRING("string"),
+    CHARARRAY("chararray"),
     BOOLEAN("boolean"),
     ITEMSTACK("itemstack"),
     LOCATION("location"),
@@ -120,6 +121,10 @@ LONGTEXT("LONGTEXT");*/
                             return DataTypeEnum.ITEMLIST;
                         }
                     }
+                }
+                if (value instanceof String)
+                {
+                    return DataTypeEnum.CHARARRAY;
                 }
         return null;
     }
@@ -226,6 +231,12 @@ LONGTEXT("LONGTEXT");*/
                     }
                 }
                 return false;
+            case "chararray":
+                if (value instanceof String)
+                {
+                    return true;
+                }
+                return false;
 
         }
         return false;
@@ -276,6 +287,9 @@ LONGTEXT("LONGTEXT");*/
                     break;
                 case "itemlist":
                     ps.setString(index, TitanSQL.encode((List<ItemStack>)value));
+                    break;
+                case "chararray":
+                    ps.setString(index, (String) value);
                     break;
 
             }

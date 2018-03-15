@@ -163,7 +163,7 @@ public class TitanSQL extends JavaPlugin {
         config.set("i.yaw", location.getYaw() + "");
         if (location.getWorld() == null)
         {
-            config.set("i.world", "error");
+            config.set("i.world", "world");
         }
         else {
             config.set("i.world", location.getWorld().getName());

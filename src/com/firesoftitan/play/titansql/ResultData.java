@@ -14,7 +14,7 @@ public class ResultData {
         this.dataType = DataType;
         this.result = result;
     }
-    public DataType getEnum()
+    public DataType getDataType()
     {
         return dataType;
     }
@@ -84,7 +84,7 @@ public class ResultData {
     }
     public String getString()
     {
-        if (dataType.getType() == DataTypeEnum.STRING)
+        if ((dataType.getType() == DataTypeEnum.STRING) || (dataType.getType() == DataTypeEnum.CHARARRAY))
         {
             if (result instanceof String) {
                 return (String) result;
@@ -148,9 +148,9 @@ public class ResultData {
         }
         return null;
     }
-    public List<String> getIntString()
+    public List<String> getStringList()
     {
-        if (dataType.getType() == DataTypeEnum.INTLIST)
+        if (dataType.getType() == DataTypeEnum.STRINGLIST)
         {
             if (result instanceof String)
             {
@@ -210,7 +210,7 @@ public class ResultData {
                 return (Double) result;
             }
         }
-        if (dataType.getType() == DataTypeEnum.STRING)
+        if (dataType.getType() == DataTypeEnum.STRING || dataType.getType() == DataTypeEnum.CHARARRAY )
         {
             if (result instanceof String) {
                 return (String) result;

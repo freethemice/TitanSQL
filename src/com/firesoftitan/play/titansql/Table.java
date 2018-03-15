@@ -50,9 +50,9 @@ public class Table {
                     ps = TitanSQL.instance.getConnection().prepareCall("SELECT * FROM " + name);
                     rs = ps.executeQuery();
                     List<HashMap<String, ResultData>> results = new ArrayList<HashMap<String, ResultData>>();
-                    HashMap<String, ResultData> oneRow = new HashMap<String, ResultData>();
+                    HashMap<String, ResultData> oneRow;
                     while (rs.next()) {
-                        oneRow.clear();
+                        oneRow = new HashMap<String, ResultData>();
                         for (DataType DT: types)
                         {
                             Object result = rs.getObject(DT.getName());
@@ -86,9 +86,9 @@ public class Table {
                     type.getType().setPreparedStatement(ps, 1, whatconverted);
                     rs = ps.executeQuery();
                     List<HashMap<String, ResultData>> results = new ArrayList<HashMap<String, ResultData>>();
-                    HashMap<String, ResultData> oneRow = new HashMap<String, ResultData>();
+                    HashMap<String, ResultData> oneRow;
                     while (rs.next()) {
-                        oneRow.clear();
+                        oneRow  = new HashMap<String, ResultData>();
                         for (DataType DT: types)
                         {
                             Object result = rs.getObject(DT.getName());
@@ -107,6 +107,66 @@ public class Table {
             }
         }.runTaskAsynchronously(TitanSQL.instance);
     }
+    public HashMap<String, ResultData> search(DataType type, Object what)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ResultData conver = new ResultData(type, what);
+        what =  conver.get();
+        try {
+            ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + this.name + " WHERE " + type.getName() + " = ? LIMIT 1");
+            type.getType().setPreparedStatement(ps, 1, what);
+            rs = ps.executeQuery();
+            HashMap<String, ResultData> oneRow;
+            while (rs.next()) {
+                oneRow = new HashMap<String, ResultData>();
+                for (DataType DT: types)
+                {
+                    Object result = rs.getObject(DT.getName());
+                    ResultData resultData = new ResultData(DT, result);
+                    oneRow.put(DT.getName(), resultData);
+                }
+                return oneRow;
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            close(ps, rs);
+        }
+        return null;
+    }
+    public boolean contains(DataType type, Object what)
+    {
+        HashMap<String, ResultData> tmp = search(type, what);
+        if (tmp == null) {
+            return false;
+        }
+        if (tmp.size() == 0)
+        {
+            return false;
+        }
+        return true;
+    }
+    //SELECT COUNT(*) FROM fooTable;
+    public int size()
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = TitanSQL.instance.getConnection().prepareStatement("SELECT COUNT(*) FROM " + this.name);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            close(ps, rs);
+        }
+        return -1;
+    }
     //DELETE FROM `lkr8bkxu_firesoftitan`.`fot_test` WHERE  `id`=12345 AND `name`='Farthead1' AND `something`=b'0' LIMIT 1;
     public void delete(DataType type, Object what)
     {
@@ -124,35 +184,7 @@ public class Table {
             close(ps, rs);
         }
     }
-    public HashMap<String, ResultData> search(DataType type, Object what)
-    {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        ResultData conver = new ResultData(type, what);
-        what =  conver.get();
-        try {
-            ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + this.name + " WHERE " + type.getName() + " = ? LIMIT 1");
-            type.getType().setPreparedStatement(ps, 1, what);
-            rs = ps.executeQuery();
-            HashMap<String, ResultData> oneRow = new HashMap<String, ResultData>();
-            while (rs.next()) {
-                oneRow.clear();
-                for (DataType DT: types)
-                {
-                    Object result = rs.getObject(DT.getName());
-                    ResultData resultData = new ResultData(DT, result);
-                    oneRow.put(DT.getName(), resultData);
-                }
-                return oneRow;
-            }
 
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            close(ps, rs);
-        }
-        return null;
-    }
     private void startRow()
     {
         tempRow = new HashMap<String, Object>();
@@ -247,7 +279,6 @@ public class Table {
     {
         try {
             String queryCreateTable = getCreateTable();
-            System.out.println(queryCreateTable);
             Statement s = TitanSQL.instance.getConnection().createStatement();
             s.executeUpdate(queryCreateTable);
             s.close();

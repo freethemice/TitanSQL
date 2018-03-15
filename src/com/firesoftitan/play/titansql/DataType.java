@@ -33,6 +33,8 @@ public class DataType {
                 return"DOUBLE";
             case "string":
                 return"TEXT";
+            case "chararray":
+                return"VARCHAR(100)";
             case "boolean":
                 return"BIT";
             case "itemstack":
