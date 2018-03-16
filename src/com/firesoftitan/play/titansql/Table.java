@@ -141,6 +141,33 @@ public class Table {
         }
         return null;
     }
+    //SELECT * FROM table_name LIMIT 100,10;
+    public HashMap<String, ResultData> search(int rowNumber)
+    {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + this.name + " LIMIT " + rowNumber + ",1");
+            rs = ps.executeQuery();
+            HashMap<String, ResultData> oneRow;
+            while (rs.next()) {
+                oneRow = new HashMap<String, ResultData>();
+                for (DataType DT: types)
+                {
+                    Object result = rs.getObject(DT.getName());
+                    ResultData resultData = new ResultData(DT, result);
+                    oneRow.put(DT.getName(), resultData);
+                }
+                return oneRow;
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            close(ps, rs);
+        }
+        return null;
+    }
     public boolean contains(String name, Object what)
     {
         DataType type = getDataType(name);
