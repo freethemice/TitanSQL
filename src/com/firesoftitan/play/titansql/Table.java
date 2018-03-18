@@ -71,6 +71,11 @@ public class Table {
             }
         }.runTaskAsynchronously(TitanSQL.instance);
     }
+    public void search(final String type,final Object what, final CallbackResults callback)
+    {
+        DataType searchfor = getDataType(type);
+        search(searchfor, what, callback);
+    }
     public void search(final DataType type,final Object what, final CallbackResults callback)
     {
         new BukkitRunnable() {
@@ -107,12 +112,13 @@ public class Table {
             }
         }.runTaskAsynchronously(TitanSQL.instance);
     }
-    public HashMap<String, ResultData> search(String name, Object what)
+
+    private HashMap<String, ResultData> search(String name, Object what)
     {
         DataType searchfor = getDataType(name);
         return search(searchfor, what);
     }
-    public HashMap<String, ResultData> search(DataType type, Object what)
+    private HashMap<String, ResultData> search(DataType type, Object what)
     {
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -142,31 +148,40 @@ public class Table {
         return null;
     }
     //SELECT * FROM table_name LIMIT 100,10;
-    public HashMap<String, ResultData> search(int rowNumber)
+    public void search(int rowNumber, final CallbackResults callback)
     {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + this.name + " LIMIT " + rowNumber + ",1");
-            rs = ps.executeQuery();
-            HashMap<String, ResultData> oneRow;
-            while (rs.next()) {
-                oneRow = new HashMap<String, ResultData>();
-                for (DataType DT: types)
-                {
-                    Object result = rs.getObject(DT.getName());
-                    ResultData resultData = new ResultData(DT, result);
-                    oneRow.put(DT.getName(), resultData);
-                }
-                return oneRow;
-            }
+        new BukkitRunnable() {
 
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            close(ps, rs);
-        }
-        return null;
+            @Override
+            public void run() {
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + name + " LIMIT " + rowNumber + ",1");
+                    rs = ps.executeQuery();
+                    HashMap<String, ResultData> oneRow;
+                    while (rs.next()) {
+                        oneRow = new HashMap<String, ResultData>();
+                        for (DataType DT: types)
+                        {
+                            Object result = rs.getObject(DT.getName());
+                            ResultData resultData = new ResultData(DT, result);
+                            oneRow.put(DT.getName(), resultData);
+                        }
+                        List<HashMap<String, ResultData>> onlyONe = new ArrayList<HashMap<String, ResultData>>();
+                        onlyONe.add(oneRow);
+                        callback.onResult(onlyONe);
+                    }
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    close(ps, rs);
+                }
+            }
+        }.runTaskAsynchronously(TitanSQL.instance);
+
+
     }
     public boolean contains(String name, Object what)
     {
@@ -205,26 +220,30 @@ public class Table {
         return -1;
     }
     //DELETE FROM `lkr8bkxu_firesoftitan`.`fot_test` WHERE  `id`=12345 AND `name`='Farthead1' AND `something`=b'0' LIMIT 1;
-    public boolean delete(String name, Object what)
+    public void delete(String name, Object what)
     {
         DataType type = getDataType(name);
-        return delete(type, what);
+        delete(type, what);
     }
-    public boolean delete(DataType type, Object what)
+    public void delete(DataType type, final Object what)
     {
-        PreparedStatement ps = null;
-        ResultData conver = new ResultData(type, what);
-        what =  conver.get();
-        try {
-            ps = TitanSQL.instance.getConnection().prepareStatement("DELETE FROM " + this.name + " WHERE " + type.getName() + " = ? LIMIT 1");
-            type.getType().setPreparedStatement(ps, 1, what);
-            return (0 != ps.executeUpdate());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            close(ps);
-        }
-        return false;
+        new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                PreparedStatement ps = null;
+                ResultData conver = new ResultData(type, what);
+                Object whatconverted = conver.get();
+                try {
+                    ps = TitanSQL.instance.getConnection().prepareStatement("DELETE FROM " + name + " WHERE " + type.getName() + " = ? LIMIT 1");
+                    type.getType().setPreparedStatement(ps, 1, whatconverted);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    close(ps);
+                }
+            }
+        }.runTaskAsynchronously(TitanSQL.instance);
     }
 
     private void startRow()
@@ -252,45 +271,52 @@ public class Table {
     }
     public void insertData()
     {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        new BukkitRunnable() {
 
-        String AoutputString = "REPLACE INTO " + this.name + " (";
-        String BoutputString = ") VALUES(";
-        List<String> order = new ArrayList<String>();
-        for(DataType dt: types)
-        {
-            if (tempRow.containsKey(dt.getName())) {
-                AoutputString = AoutputString + dt.getName() + ",";
-                BoutputString = BoutputString + "?,";
-                order.add(dt.getName());
+            @Override
+            public void run() {
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+
+                String AoutputString = "REPLACE INTO " + name + " (";
+                String BoutputString = ") VALUES(";
+                List<String> order = new ArrayList<String>();
+                for(DataType dt: types)
+                {
+                    if (tempRow.containsKey(dt.getName())) {
+                        AoutputString = AoutputString + dt.getName() + ",";
+                        BoutputString = BoutputString + "?,";
+                        order.add(dt.getName());
+                    }
+                }
+                AoutputString = AoutputString.substring(0, AoutputString.length() - 1);
+                BoutputString = BoutputString.substring(0, BoutputString.length() - 1);
+
+
+                try {
+                    ps = TitanSQL.instance.getConnection().prepareStatement(AoutputString + BoutputString +")", Statement.RETURN_GENERATED_KEYS);
+
+                    int i = 1;
+                    for(String key: order)
+                    {
+                        DataTypeEnum DT = typesByName.get(key).getType();
+                        DT.setPreparedStatement(ps, i, tempRow.get(key));
+                        i++;
+                    }
+                    ps.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    close(ps);
+                }
+
+                //send code
+                tempRow.clear();
+                tempRow = null;
             }
-        }
-        AoutputString = AoutputString.substring(0, AoutputString.length() - 1);
-        BoutputString = BoutputString.substring(0, BoutputString.length() - 1);
+        }.runTaskAsynchronously(TitanSQL.instance);
 
-
-        try {
-            ps = TitanSQL.instance.getConnection().prepareStatement(AoutputString + BoutputString +")", Statement.RETURN_GENERATED_KEYS);
-
-            int i = 1;
-            for(String key: order)
-            {
-                DataTypeEnum DT = typesByName.get(key).getType();
-                DT.setPreparedStatement(ps, i, tempRow.get(key));
-                i++;
-            }
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally {
-            close(ps);
-        }
-
-        //send code
-        tempRow.clear();
-        tempRow = null;
     }
     private void close(PreparedStatement ps) {
         close(ps, null);
