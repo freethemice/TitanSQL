@@ -35,6 +35,16 @@ public class TitanSQL extends JavaPlugin {
     {
 
     }
+    public static String getTrace() {
+        StackTraceElement[] AllCalls = Thread.currentThread().getStackTrace();
+        String calls = "";
+        for (int i = 2; i < AllCalls.length; i++)
+        {
+            StackTraceElement callingFrame = AllCalls[i];
+            calls  = calls + callingFrame + "-->\n";
+        }
+        return calls;
+    }
     public void onEnable(){
         instance = this;
         this.configFile = new File("plugins/" + instance.getDescription().getName().replace(" ", "_") + "/config.yml");

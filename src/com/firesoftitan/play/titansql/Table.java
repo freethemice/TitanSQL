@@ -40,6 +40,7 @@ public class Table {
     }
     public void search(final CallbackResults callback)
     {
+        final String trace =  TitanSQL.getTrace();
         new BukkitRunnable() {
 
             @Override
@@ -65,6 +66,9 @@ public class Table {
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
+                    System.out.println("----------------------------------");
+                    System.out.println(trace);
+                    System.out.println("----------------------------------");
                 } finally {
                     close(ps, rs);
                 }
@@ -78,6 +82,7 @@ public class Table {
     }
     public void search(final DataType type,final Object what, final CallbackResults callback)
     {
+        final String trace =  TitanSQL.getTrace();
         new BukkitRunnable() {
 
             @Override
@@ -106,6 +111,9 @@ public class Table {
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
+                    System.out.println("----------------------------------");
+                    System.out.println(trace);
+                    System.out.println("----------------------------------");
                 } finally {
                     close(ps, rs);
                 }
@@ -120,6 +128,8 @@ public class Table {
     }
     private HashMap<String, ResultData> search(DataType type, Object what)
     {
+        final String trace =  TitanSQL.getTrace();
+
         PreparedStatement ps = null;
         ResultSet rs = null;
         ResultData conver = new ResultData(type, what);
@@ -142,6 +152,9 @@ public class Table {
 
         } catch (SQLException ex) {
             ex.printStackTrace();
+            System.out.println("----------------------------------");
+            System.out.println(trace);
+            System.out.println("----------------------------------");
         } finally {
             close(ps, rs);
         }
@@ -150,6 +163,7 @@ public class Table {
     //SELECT * FROM table_name LIMIT 100,10;
     public void search(int rowNumber, final CallbackResults callback)
     {
+        final String trace =  TitanSQL.getTrace();
         new BukkitRunnable() {
 
             @Override
@@ -175,6 +189,9 @@ public class Table {
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
+                    System.out.println("----------------------------------");
+                    System.out.println(trace);
+                    System.out.println("----------------------------------");
                 } finally {
                     close(ps, rs);
                 }
@@ -227,6 +244,7 @@ public class Table {
     }
     public void delete(DataType type, final Object what)
     {
+        final String trace =  TitanSQL.getTrace();
         new BukkitRunnable() {
 
             @Override
@@ -237,8 +255,12 @@ public class Table {
                 try {
                     ps = TitanSQL.instance.getConnection().prepareStatement("DELETE FROM " + name + " WHERE " + type.getName() + " = ? LIMIT 1");
                     type.getType().setPreparedStatement(ps, 1, whatconverted);
+                    ps.executeUpdate();
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                    System.out.println("----------------------------------");
+                    System.out.println(trace);
+                    System.out.println("----------------------------------");
                 } finally {
                     close(ps);
                 }
@@ -271,6 +293,7 @@ public class Table {
     }
     public void insertData()
     {
+        final String trace =  TitanSQL.getTrace();
         new BukkitRunnable() {
 
             @Override
@@ -306,6 +329,9 @@ public class Table {
                     ps.executeUpdate();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    System.out.println("----------------------------------");
+                    System.out.println(trace);
+                    System.out.println("----------------------------------");
                 }
                 finally {
                     close(ps);
