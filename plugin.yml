@@ -2,4 +2,4 @@ name: TitanSQL
 main: com.firesoftitan.play.titansql.TitanSQL
 dev-url: http://www.firesoftitan.com
 version: 1.0.0
-authors: [freethemice]
+author: [freethemice]

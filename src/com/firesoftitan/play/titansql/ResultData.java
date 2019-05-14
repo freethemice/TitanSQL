@@ -26,8 +26,19 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.BYTE)
         {
-            if (result instanceof  Byte) {
+            try
+            {
                 return (Byte) result;
+            }
+            catch (Exception e)
+            {
+                try {
+                    return Byte.valueOf(result + "");
+                }
+                catch (Exception e2)
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -36,8 +47,19 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.SHORT)
         {
-            if (result instanceof  Short) {
+            try
+            {
                 return (Short) result;
+            }
+            catch (Exception e)
+            {
+                try {
+                    return Short.valueOf(result + "");
+                }
+                catch (Exception e2)
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -46,8 +68,19 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.INTEGER)
         {
-            if (result instanceof  Integer) {
+            try
+            {
                 return (Integer) result;
+            }
+            catch (Exception e)
+            {
+                try {
+                    return Integer.valueOf(result + "");
+                }
+                catch (Exception e2)
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -56,8 +89,19 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.LONG)
         {
-            if (result instanceof  Long) {
+            try
+            {
                 return (Long) result;
+            }
+            catch (Exception e)
+            {
+                try {
+                    return Long.valueOf(result + "");
+                }
+                catch (Exception e2)
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -66,8 +110,19 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.FLOAT)
         {
-            if (result instanceof Float) {
+            try
+            {
                 return (Float) result;
+            }
+            catch (Exception e)
+            {
+                try {
+                    return Float.valueOf(result + "");
+                }
+                catch (Exception e2)
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -76,8 +131,19 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.DOUBLE)
         {
-            if (result instanceof  Double) {
+            try
+            {
                 return (Double) result;
+            }
+            catch (Exception e)
+            {
+                try {
+                    return Double.valueOf(result + "");
+                }
+                catch (Exception e2)
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -86,8 +152,13 @@ public class ResultData {
     {
         if ((dataType.getType() == DataTypeEnum.STRING) || (dataType.getType() == DataTypeEnum.CHARARRAY))
         {
-            if (result instanceof String) {
+            try
+            {
                 return (String) result;
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
         return null;
@@ -96,8 +167,19 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.BOOLEAN)
         {
-            if (result instanceof Boolean) {
+            try
+            {
                 return (Boolean) result;
+            }
+            catch (Exception e)
+            {
+                try {
+                    return Boolean.valueOf(result + "");
+                }
+                catch (Exception e2)
+                {
+                    return null;
+                }
             }
         }
         return null;
@@ -106,10 +188,14 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.ITEMSTACK)
         {
-            if (result instanceof String)
+            try
             {
                 ItemStack nresults = TitanSQL.decodeItemStack((String)result);
                 return nresults;
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
         return null;
@@ -118,10 +204,14 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.LOCATION)
         {
-            if (result instanceof String)
+            try
             {
                 Location nresults = TitanSQL.decodeLocation((String)result);
                 return nresults;
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
         return null;
@@ -130,8 +220,13 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.UUID)
         {
-            if (result instanceof String) {
+            try
+            {
                 return UUID.fromString((String)result);
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
         return null;
@@ -140,10 +235,14 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.INTLIST)
         {
-            if (result instanceof String)
+            try
             {
                 List<Integer> nresults = TitanSQL.decodeIntList((String)result);
                 return nresults;
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
         return null;
@@ -152,10 +251,14 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.STRINGLIST)
         {
-            if (result instanceof String)
+            try
             {
                 List<String> nresults = TitanSQL.decodeStringList((String)result);
                 return nresults;
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
         return null;
@@ -164,110 +267,89 @@ public class ResultData {
     {
         if (dataType.getType() == DataTypeEnum.ITEMLIST)
         {
-            if (result instanceof String)
+            try
             {
                 List<ItemStack> nresults = TitanSQL.decodeItemList((String)result);
                 return nresults;
+            }
+            catch (Exception e)
+            {
+                return null;
             }
         }
         return null;
     }
     public Object get()
     {
-        if (dataType.getType() == DataTypeEnum.BYTE)
-        {
-            if (result instanceof  Byte) {
+        try {
+            if (dataType.getType() == DataTypeEnum.BYTE) {
                 return (Byte) result;
             }
-        }
-        if (dataType.getType() == DataTypeEnum.SHORT)
-        {
-            if (result instanceof  Short) {
+            if (dataType.getType() == DataTypeEnum.SHORT) {
                 return (Short) result;
             }
-        }
-        if (dataType.getType() == DataTypeEnum.INTEGER)
-        {
-            if (result instanceof  Integer) {
+            if (dataType.getType() == DataTypeEnum.INTEGER) {
                 return (Integer) result;
             }
-        }
-        if (dataType.getType() == DataTypeEnum.LONG)
-        {
-            if (result instanceof  Long) {
+            if (dataType.getType() == DataTypeEnum.LONG) {
                 return (Long) result;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.FLOAT)
-        {
-            if (result instanceof Float) {
+            if (dataType.getType() == DataTypeEnum.FLOAT) {
                 return (Float) result;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.DOUBLE)
-        {
-            if (result instanceof  Double) {
+            if (dataType.getType() == DataTypeEnum.DOUBLE) {
                 return (Double) result;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.STRING || dataType.getType() == DataTypeEnum.CHARARRAY )
-        {
-            if (result instanceof String) {
+            if (dataType.getType() == DataTypeEnum.STRING || dataType.getType() == DataTypeEnum.CHARARRAY) {
                 return (String) result;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.BOOLEAN)
-        {
-            if (result instanceof Boolean) {
+            if (dataType.getType() == DataTypeEnum.BOOLEAN) {
                 return (Boolean) result;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.ITEMSTACK)
-        {
-            if (result instanceof String)
-            {
-                ItemStack nresults = TitanSQL.decodeItemStack((String)result);
+            if (dataType.getType() == DataTypeEnum.ITEMSTACK) {
+                ItemStack nresults = TitanSQL.decodeItemStack((String) result);
                 return nresults;
+
             }
-        }
-        if (dataType.getType()  == DataTypeEnum.LOCATION)
-        {
-            if (result instanceof String)
-            {
-                Location nresults = TitanSQL.decodeLocation((String)result);
+            if (dataType.getType() == DataTypeEnum.LOCATION) {
+
+                Location nresults = TitanSQL.decodeLocation((String) result);
                 return nresults;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.UUID)
-        {
-            if (result instanceof String) {
-                return UUID.fromString((String)result);
+            if (dataType.getType() == DataTypeEnum.UUID) {
+
+                return UUID.fromString((String) result);
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.INTLIST)
-        {
-            if (result instanceof String)
-            {
-                List<Integer> nresults = TitanSQL.decodeIntList((String)result);
+            if (dataType.getType() == DataTypeEnum.INTLIST) {
+
+                List<Integer> nresults = TitanSQL.decodeIntList((String) result);
                 return nresults;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.INTLIST)
-        {
-            if (result instanceof String)
-            {
-                List<String> nresults = TitanSQL.decodeStringList((String)result);
+            if (dataType.getType() == DataTypeEnum.INTLIST) {
+
+                List<String> nresults = TitanSQL.decodeStringList((String) result);
                 return nresults;
+
             }
-        }
-        if (dataType.getType() == DataTypeEnum.ITEMLIST)
-        {
-            if (result instanceof String)
-            {
-                List<ItemStack> nresults = TitanSQL.decodeItemList((String)result);
+            if (dataType.getType() == DataTypeEnum.ITEMLIST) {
+
+                List<ItemStack> nresults = TitanSQL.decodeItemList((String) result);
                 return nresults;
+
             }
+            return result;
         }
-        return null;
+        catch (Exception e)
+        {
+            return result;
+        }
     }
 }

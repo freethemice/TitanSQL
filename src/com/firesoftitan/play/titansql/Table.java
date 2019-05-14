@@ -1,7 +1,5 @@
 package com.firesoftitan.play.titansql;
 
-import org.bukkit.scheduler.BukkitRunnable;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,12 +14,42 @@ public class Table {
     private HashMap<String, DataType> typesByName;
     private String name;
     private HashMap<String, Object> tempRow;
+    private Database database;
     public Table(String myName)
     {
         this.types = new ArrayList<DataType>();
         this.typesByName = new HashMap<String, DataType>();
         this.name = myName;
+        this.database = TitanSQL.instance.getDatebase();
+        TitanSQL.instance.addTable(this);
     }
+    public Table(String myName, String DatabaseName)
+    {
+        this.types = new ArrayList<DataType>();
+        this.typesByName = new HashMap<String, DataType>();
+        this.name = myName;
+        this.database = TitanSQL.instance.getDatebase(DatabaseName);
+        if (this.database == null)
+        {
+            TitanSQL.instance.addDatabase(DatabaseName, true);
+            this.database = TitanSQL.instance.getDatebase(DatabaseName);
+        }
+        TitanSQL.instance.addTable(this);
+    }
+    public Table(String myName, String DatabaseName, boolean keepalive)
+    {
+        this.types = new ArrayList<DataType>();
+        this.typesByName = new HashMap<String, DataType>();
+        this.name = myName;
+        this.database = TitanSQL.instance.getDatebase(DatabaseName);
+        if (this.database == null)
+        {
+            TitanSQL.instance.addDatabase(DatabaseName, keepalive);
+            this.database = TitanSQL.instance.getDatebase(DatabaseName);
+        }
+        TitanSQL.instance.addTable(this);
+    }
+
     public DataType getDataType(String name)
     {
         if (typesByName.containsKey(name))
@@ -41,14 +69,17 @@ public class Table {
     public void search(final CallbackResults callback)
     {
         final String trace =  TitanSQL.getTrace();
-        new BukkitRunnable() {
+        final String simpletrace =  TitanSQL.getSimpleTrace();
+        final String pluginName = TitanSQL.getPlugin();
 
+        TitanRunnable tmpY = new TitanRunnable(pluginName, simpletrace) {
             @Override
             public void run() {
+                long first = System.currentTimeMillis();
                 PreparedStatement ps = null;
                 ResultSet rs = null;
                 try {
-                    ps = TitanSQL.instance.getConnection().prepareCall("SELECT * FROM " + name);
+                    ps = database.getConnection().prepareCall("SELECT * FROM " + name);
                     rs = ps.executeQuery();
                     List<HashMap<String, ResultData>> results = new ArrayList<HashMap<String, ResultData>>();
                     HashMap<String, ResultData> oneRow;
@@ -70,10 +101,15 @@ public class Table {
                     System.out.println(trace);
                     System.out.println("----------------------------------");
                 } finally {
+                    TitanSQL.instance.tasksSaver.remove(this.getTaskId());
+                    long last = System.currentTimeMillis() - first;
+                    printThreadTime(last);
                     close(ps, rs);
                 }
             }
-        }.runTaskAsynchronously(TitanSQL.instance);
+        };
+        tmpY.runTask(TitanSQL.instance);
+        TitanSQL.instance.tasksSaver.put(tmpY.getTaskId(), tmpY);
     }
     public void search(final String type,final Object what, final CallbackResults callback)
     {
@@ -83,16 +119,20 @@ public class Table {
     public void search(final DataType type,final Object what, final CallbackResults callback)
     {
         final String trace =  TitanSQL.getTrace();
-        new BukkitRunnable() {
+        final String simpletrace =  TitanSQL.getSimpleTrace();
+        final String pluginName = TitanSQL.getPlugin();
+
+        TitanRunnable tmpY = new TitanRunnable(pluginName, simpletrace) {
 
             @Override
             public void run() {
+                long first = System.currentTimeMillis();
                 PreparedStatement ps = null;
                 ResultSet rs = null;
                 ResultData conver = new ResultData(type, what);
                 Object whatconverted =  conver.get();
                 try {
-                    ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + name + " WHERE " + type.getName() + " = ?");
+                    ps = database.getConnection().prepareStatement("SELECT * FROM " + name + " WHERE " + type.getName() + " = ?");
                     type.getType().setPreparedStatement(ps, 1, whatconverted);
                     rs = ps.executeQuery();
                     List<HashMap<String, ResultData>> results = new ArrayList<HashMap<String, ResultData>>();
@@ -115,10 +155,15 @@ public class Table {
                     System.out.println(trace);
                     System.out.println("----------------------------------");
                 } finally {
+                    TitanSQL.instance.tasksSaver.remove(this.getTaskId());
+                    long last = System.currentTimeMillis() - first;
+                    printThreadTime(last);
                     close(ps, rs);
                 }
             }
-        }.runTaskAsynchronously(TitanSQL.instance);
+        };
+        tmpY.runTask(TitanSQL.instance);
+        TitanSQL.instance.tasksSaver.put(tmpY.getTaskId(), tmpY);
     }
 
     private HashMap<String, ResultData> search(String name, Object what)
@@ -128,6 +173,7 @@ public class Table {
     }
     private HashMap<String, ResultData> search(DataType type, Object what)
     {
+        long first = System.currentTimeMillis();
         final String trace =  TitanSQL.getTrace();
 
         PreparedStatement ps = null;
@@ -135,7 +181,7 @@ public class Table {
         ResultData conver = new ResultData(type, what);
         what =  conver.get();
         try {
-            ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + this.name + " WHERE " + type.getName() + " = ? LIMIT 1");
+            ps = database.getConnection().prepareStatement("SELECT * FROM " + this.name + " WHERE " + type.getName() + " = ? LIMIT 1");
             type.getType().setPreparedStatement(ps, 1, what);
             rs = ps.executeQuery();
             HashMap<String, ResultData> oneRow;
@@ -156,22 +202,33 @@ public class Table {
             System.out.println(trace);
             System.out.println("----------------------------------");
         } finally {
+            long last = System.currentTimeMillis() - first;
+            printThreadTime(last);
             close(ps, rs);
         }
         return null;
     }
+
+    public String getName() {
+        return name;
+    }
+
     //SELECT * FROM table_name LIMIT 100,10;
     public void search(int rowNumber, final CallbackResults callback)
     {
         final String trace =  TitanSQL.getTrace();
-        new BukkitRunnable() {
+        final String simpletrace =  TitanSQL.getSimpleTrace();
+        final String pluginName = TitanSQL.getPlugin();
+
+        TitanRunnable tmpY = new TitanRunnable(pluginName, simpletrace) {
 
             @Override
             public void run() {
+                long first = System.currentTimeMillis();
                 PreparedStatement ps = null;
                 ResultSet rs = null;
                 try {
-                    ps = TitanSQL.instance.getConnection().prepareStatement("SELECT * FROM " + name + " LIMIT " + rowNumber + ",1");
+                    ps = database.getConnection().prepareStatement("SELECT * FROM " + name + " LIMIT " + rowNumber + ",1");
                     rs = ps.executeQuery();
                     HashMap<String, ResultData> oneRow;
                     while (rs.next()) {
@@ -193,10 +250,15 @@ public class Table {
                     System.out.println(trace);
                     System.out.println("----------------------------------");
                 } finally {
+                    TitanSQL.instance.tasksSaver.remove(this.getTaskId());
+                    long last = System.currentTimeMillis() - first;
+                    printThreadTime(last);
                     close(ps, rs);
                 }
             }
-        }.runTaskAsynchronously(TitanSQL.instance);
+        };
+        tmpY.runTask(TitanSQL.instance);
+        TitanSQL.instance.tasksSaver.put(tmpY.getTaskId(), tmpY);
 
 
     }
@@ -220,10 +282,11 @@ public class Table {
     //SELECT COUNT(*) FROM fooTable;
     public int size()
     {
+        long first = System.currentTimeMillis();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            ps = TitanSQL.instance.getConnection().prepareStatement("SELECT COUNT(*) FROM " + this.name);
+            ps = database.getConnection().prepareStatement("SELECT COUNT(*) FROM " + this.name);
             rs = ps.executeQuery();
             while (rs.next()) {
                 return rs.getInt(1);
@@ -232,11 +295,13 @@ public class Table {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
+            long last = System.currentTimeMillis() - first;
+            printThreadTime(last);
             close(ps, rs);
         }
+
         return -1;
     }
-    //DELETE FROM `lkr8bkxu_firesoftitan`.`fot_test` WHERE  `id`=12345 AND `name`='Farthead1' AND `something`=b'0' LIMIT 1;
     public void delete(String name, Object what)
     {
         DataType type = getDataType(name);
@@ -245,27 +310,37 @@ public class Table {
     public void delete(DataType type, final Object what)
     {
         final String trace =  TitanSQL.getTrace();
-        new BukkitRunnable() {
+        final String simpletrace =  TitanSQL.getSimpleTrace();
+        final String pluginName = TitanSQL.getPlugin();
 
-            @Override
-            public void run() {
-                PreparedStatement ps = null;
-                ResultData conver = new ResultData(type, what);
-                Object whatconverted = conver.get();
-                try {
-                    ps = TitanSQL.instance.getConnection().prepareStatement("DELETE FROM " + name + " WHERE " + type.getName() + " = ? LIMIT 1");
-                    type.getType().setPreparedStatement(ps, 1, whatconverted);
-                    ps.executeUpdate();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    System.out.println("----------------------------------");
-                    System.out.println(trace);
-                    System.out.println("----------------------------------");
-                } finally {
-                    close(ps);
-                }
+
+        long first = System.currentTimeMillis();
+        PreparedStatement ps = null;
+        ResultData conver = new ResultData(type, what);
+        Object whatconverted = conver.get();
+        try {
+            String finalString = "DELETE FROM " + name + " WHERE " + type.getName() + " = ? LIMIT 1";
+            TitanSQL.instance.addPreparedStatement(finalString, database.getConnection().prepareStatement(finalString));
+            PreparedStatement tmpST =   TitanSQL.instance.getPreparedStatement(finalString);
+            type.getType().setPreparedStatement(tmpST, 1, whatconverted);
+            tmpST.addBatch();
+            TitanSQL.instance.addBulkCount(finalString);
+            if (TitanSQL.instance.getBuilkDataCount(finalString) >= TitanSQL.instance.getQueued_size())
+            {
+                TitanSQL.instance.saverCheck.run();
             }
-        }.runTaskAsynchronously(TitanSQL.instance);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("----------------------------------");
+            System.out.println(trace);
+            System.out.println("----------------------------------");
+        } finally {
+            long last = System.currentTimeMillis() - first;
+            printThreadTime(last);
+            close(ps);
+        }
+
+
     }
 
     private void startRow()
@@ -293,57 +368,123 @@ public class Table {
     }
     public void insertData()
     {
-        final String trace =  TitanSQL.getTrace();
-        new BukkitRunnable() {
+        final HashMap<String, Object> HoldMetempRow = new HashMap<String, Object>();
+        if (tempRow != null) {
+            HoldMetempRow.putAll(tempRow);
+            tempRow.clear();
+        }
 
-            @Override
-            public void run() {
-                PreparedStatement ps = null;
-                ResultSet rs = null;
-
-                String AoutputString = "REPLACE INTO " + name + " (";
-                String BoutputString = ") VALUES(";
-                List<String> order = new ArrayList<String>();
-                for(DataType dt: types)
-                {
-                    if (tempRow.containsKey(dt.getName())) {
-                        AoutputString = AoutputString + dt.getName() + ",";
-                        BoutputString = BoutputString + "?,";
-                        order.add(dt.getName());
-                    }
-                }
-                AoutputString = AoutputString.substring(0, AoutputString.length() - 1);
-                BoutputString = BoutputString.substring(0, BoutputString.length() - 1);
-
-
-                try {
-                    ps = TitanSQL.instance.getConnection().prepareStatement(AoutputString + BoutputString +")", Statement.RETURN_GENERATED_KEYS);
-
-                    int i = 1;
-                    for(String key: order)
-                    {
-                        DataTypeEnum DT = typesByName.get(key).getType();
-                        DT.setPreparedStatement(ps, i, tempRow.get(key));
-                        i++;
-                    }
-                    ps.executeUpdate();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("----------------------------------");
-                    System.out.println(trace);
-                    System.out.println("----------------------------------");
-                }
-                finally {
-                    close(ps);
-                }
-
-                //send code
-                tempRow.clear();
-                tempRow = null;
+        String AoutputString = "REPLACE INTO " + name + " (";
+        String BoutputString = ") VALUES(";
+        List<String> order = new ArrayList<String>();
+        for(DataType dt: types)
+        {
+            if (HoldMetempRow.containsKey(dt.getName())) {
+                AoutputString = AoutputString + dt.getName() + ",";
+                BoutputString = BoutputString + "?,";
+                order.add(dt.getName());
             }
-        }.runTaskAsynchronously(TitanSQL.instance);
+        }
+        AoutputString = AoutputString.substring(0, AoutputString.length() - 1);
+        BoutputString = BoutputString.substring(0, BoutputString.length() - 1);
+
+        try {
+            String finalyString = AoutputString + BoutputString + ")";
+            TitanSQL.instance.addPreparedStatement(finalyString, database.getConnection().prepareStatement(finalyString));
+            PreparedStatementHolder tmpSTHolder = TitanSQL.instance.getPreparedStatementHolder(finalyString);
+            PreparedStatement tmpST = TitanSQL.instance.getPreparedStatement(finalyString);
+            int i = 1;
+            for(String key: order)
+            {
+                DataTypeEnum DT = typesByName.get(key).getType();
+                DT.setPreparedStatement(tmpST, i, HoldMetempRow.get(key) );
+                i++;
+            }
+            tmpST.addBatch();
+            TitanSQL.instance.addBulkCount(finalyString);
+            if (TitanSQL.instance.getBuilkDataCount(finalyString) >= TitanSQL.instance.getQueued_size())
+            {
+                TitanSQL.instance.saverCheck.run();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
+    @Deprecated
+    public void insertDataDirect()
+    {
+        final HashMap<String, Object> HoldMetempRow = new HashMap<String, Object>();
+        if (tempRow != null) {
+            HoldMetempRow.putAll(tempRow);
+            tempRow.clear();
+        }
+
+        tempRow = null;
+        final String trace =  TitanSQL.getTrace();
+        final String simpletrace =  TitanSQL.getSimpleTrace();
+        final String pluginName = TitanSQL.getPlugin();
+
+
+
+        try {
+            long first = System.currentTimeMillis();
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+
+            String AoutputString = "REPLACE INTO " + name + " (";
+            String BoutputString = ") VALUES(";
+            List<String> order = new ArrayList<String>();
+            for(DataType dt: types)
+            {
+                if (HoldMetempRow.containsKey(dt.getName())) {
+                    AoutputString = AoutputString + dt.getName() + ",";
+                    BoutputString = BoutputString + "?,";
+                    order.add(dt.getName());
+                }
+            }
+            AoutputString = AoutputString.substring(0, AoutputString.length() - 1);
+            BoutputString = BoutputString.substring(0, BoutputString.length() - 1);
+
+
+            try {
+                ps = database.getConnection().prepareStatement(AoutputString + BoutputString +")", Statement.RETURN_GENERATED_KEYS);
+
+                int i = 1;
+                for(String key: order)
+                {
+                    DataTypeEnum DT = typesByName.get(key).getType();
+                    DT.setPreparedStatement(ps, i, HoldMetempRow.get(key));
+                    i++;
+                }
+                ps.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("----------------------------------");
+                System.out.println(trace);
+                System.out.println("----------------------------------");
+            }
+            finally {
+                close(ps);
+
+            }
+
+            //send code
+            HoldMetempRow.clear();
+            long last = System.currentTimeMillis() - first;
+            printThreadTime(last);
+        } catch (Exception e) {
+
+        }
 
     }
+    private void printThreadTime(long last) {
+        /*
+        if (last > 5000) {
+            System.out.println("Thread Time: " + last);
+        }*/
+    }
+
     private void close(PreparedStatement ps) {
         close(ps, null);
     }
@@ -373,7 +514,7 @@ public class Table {
     {
         try {
             String queryCreateTable = getCreateTable();
-            Statement s = TitanSQL.instance.getConnection().createStatement();
+            Statement s = database.getConnection().createStatement();
             s.executeUpdate(queryCreateTable);
             s.close();
         }

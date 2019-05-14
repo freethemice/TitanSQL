@@ -32,23 +32,23 @@ public class DataType {
             case "double":
                 return"DOUBLE";
             case "string":
-                return"TEXT";
+                return"LONGTEXT";
             case "chararray":
                 return"VARCHAR(100)";
             case "boolean":
                 return"BIT";
             case "itemstack":
-                return"TEXT";
+                return"LONGTEXT";
             case "location":
-                return"TEXT";
+                return"LONGTEXT";
             case "uuid":
-                return"TEXT";
+                return"LONGTEXT";
             case "intlist":
-                return"TEXT";
+                return"LONGTEXT";
             case "stringlist":
-                return"TEXT";
+                return"LONGTEXT";
             case "itemlist":
-                return"TEXT";
+                return"LONGTEXT";
 
         }
         return null;
