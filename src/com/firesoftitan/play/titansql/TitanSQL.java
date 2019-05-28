@@ -26,6 +26,8 @@ public class TitanSQL extends JavaPlugin {
     //private Connection connection;
     private HashMap<String, Database> connections;
     public static TitanSQL instance;
+    private static int queued_size = 1000;
+    private static double kill_on_exit = 300000;
     public static String titan_mysql_host;
     public static String titan_mysql_port;
     public static String titan_mysql_database;
@@ -260,7 +262,7 @@ public class TitanSQL extends JavaPlugin {
         return "Unknown";
     }
     public int getQueued_size() {
-        return 1000;
+        return queued_size;
     }
 
     public static String getSimpleTrace() {
@@ -289,7 +291,7 @@ public class TitanSQL extends JavaPlugin {
         saverCheck.run();
         long timepass = System.currentTimeMillis();
         int sizeleft = printThreadCounts();
-        long killTimer = System.currentTimeMillis() + 300000;
+        long killTimer = System.currentTimeMillis() + (long)kill_on_exit;
         while (sizeleft > 0 || running.size() > 0)
         {
             if (System.currentTimeMillis() >= killTimer)
@@ -400,6 +402,14 @@ public class TitanSQL extends JavaPlugin {
         {
             this.config.set("mysql.enabled", false);
         }
+        if (!this.config.contains("mysql.max_que_size"))
+        {
+            this.config.set("mysql.max_que_size", 1000);
+        }
+        if (!this.config.contains("mysql.stop_sending_on_shutdown"))
+        {
+            this.config.set("mysql.stop_sending_on_shutdown", 5.0f);
+        }
         try {
             this.config.save(configFile);
         } catch (IOException e) {
@@ -413,6 +423,8 @@ public class TitanSQL extends JavaPlugin {
         titan_mysql_username = this.config.getString("mysql.username");
         titan_mysql_password = this.config.getString("mysql.password");
         titan_mysql_enabled = this.config.getBoolean("mysql.enabled");
+        queued_size = this.config.getInt("mysql.max_que_size");
+        kill_on_exit = this.config.getDouble("mysql.stop_sending_on_shutdown") * 60 * 1000;
         if (!titan_mysql_enabled)
         {
             System.out.println("[TitanSQL]: I'm disabled, enable me in the config file.");
