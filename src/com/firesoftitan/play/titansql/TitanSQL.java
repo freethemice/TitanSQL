@@ -28,6 +28,7 @@ public class TitanSQL extends JavaPlugin {
     public static TitanSQL instance;
     private static int queued_size = 1000;
     private static double kill_on_exit = 300000;
+    private static double send_data_intervals = 5*60*20;
     public static String titan_mysql_host;
     public static String titan_mysql_port;
     public static String titan_mysql_database;
@@ -231,7 +232,7 @@ public class TitanSQL extends JavaPlugin {
                 }
             }
         };
-        int savetime = 5*60*20;
+        int savetime = (int) send_data_intervals;
         saverCheck.runTaskTimer(TitanSQL.instance, savetime, savetime);
     }
     public Long getLastSaved()
@@ -410,6 +411,13 @@ public class TitanSQL extends JavaPlugin {
         {
             this.config.set("mysql.stop_sending_on_shutdown", 5.0f);
         }
+        if (!this.config.contains("mysql.send_data_intervals"))
+        {
+            this.config.set("mysql.send_data_intervals", 5.0f);
+        }
+
+
+
         try {
             this.config.save(configFile);
         } catch (IOException e) {
@@ -425,6 +433,7 @@ public class TitanSQL extends JavaPlugin {
         titan_mysql_enabled = this.config.getBoolean("mysql.enabled");
         queued_size = this.config.getInt("mysql.max_que_size");
         kill_on_exit = this.config.getDouble("mysql.stop_sending_on_shutdown") * 60 * 1000;
+        send_data_intervals =  this.config.getDouble("mysql.send_data_intervals") * 60 * 20;
         if (!titan_mysql_enabled)
         {
             System.out.println("[TitanSQL]: I'm disabled, enable me in the config file.");
